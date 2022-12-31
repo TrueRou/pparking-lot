@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 
+import cache
 import models
 from cache import get_cached_data, refresh_cached_data, get_prepend_data
 from models import db_session_bancho, Score
@@ -10,8 +11,14 @@ app = FastAPI()
 
 
 @app.on_event("startup")
-async def create_table():
+async def startup_event():
     await models.create_db_and_tables()
+    cache.read_cache()
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    cache.save_cache()
 
 
 @app.patch("/scores/global")

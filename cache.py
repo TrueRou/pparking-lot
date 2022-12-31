@@ -1,4 +1,7 @@
+import io
 import json
+import os
+import pickle
 
 from sqlalchemy import select
 
@@ -7,8 +10,19 @@ from models import db_session_bancho, Score
 from mods import Mods
 from performance import calculate_prepend
 
-cache_dict = {}
+cache_dict: dict = {}
 prepend_maps = [(2486881, 100.0, "HDDTRX")]
+
+
+def save_cache():
+    with open("cache.pkl", "wb") as tf:
+        pickle.dump(cache_dict, tf)
+
+
+def read_cache():
+    if os.path.exists("cache.pkl"):
+        with open("cache.pkl", "rb") as tf:
+            cache_dict.update(pickle.load(tf))
 
 
 async def get_cached_data(source: str):
