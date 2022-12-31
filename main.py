@@ -68,7 +68,7 @@ async def insert_data(sentence, source):
 
 async def delete_data(source):
     async with db_session_bancho() as session:
-        await session.execute(text("delete from score_analysis where source=:source").bindparams(source=source))
+        await session.execute(text("delete from scores_analysis where source=:source").bindparams(source=source))
 
 
 async def update_global():

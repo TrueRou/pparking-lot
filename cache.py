@@ -8,7 +8,7 @@ from mods import Mods
 from performance import calculate_prepend
 
 cache_dict = {}
-prepend_maps = [(2486881, 99.0, "HDDTRX")]
+prepend_maps = [(2486881, 100.0, "HDDTRX")]
 
 
 async def get_cached_data(source: str):
