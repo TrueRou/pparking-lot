@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy import text
+from starlette.middleware.cors import CORSMiddleware
 
 import cache
 import models
@@ -8,6 +9,18 @@ from models import db_session_bancho, Score
 from performance import calculate
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",  # yarn dev
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
