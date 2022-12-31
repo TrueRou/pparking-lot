@@ -5,7 +5,6 @@ from os import path
 from typing import Any
 
 from akatsuki_pp_py import Calculator, Beatmap
-from sqlalchemy import func
 
 from gamemode import GameMode
 from mods import Mods
@@ -52,9 +51,8 @@ def calculate(beatmap_id: int, mods: int, mode: int, acc: float, ngeki: int, nka
         beatmap_attr: Any = calculator.map_attributes(beatmap)
         difficulty_attr: Any = calculator.difficulty(beatmap)
         performance_attr: Any = calculator.performance(beatmap)
-        strains: Any = calculator.strains(beatmap)
         performance_point = performance_attr.pp if beatmap_attr.mode == mode_vn else 0.0
         performance_point = performance_point if performance_point <= 8192 else 8192.0
-        return json_dump(difficulty_attr), json_dump(performance_attr), json_dump(strains), performance_point
+        return json_dump(difficulty_attr), json_dump(performance_attr), performance_point
     except:
-        return None, None, None, 0.0
+        return None, None, 0.0
