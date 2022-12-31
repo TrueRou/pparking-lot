@@ -48,11 +48,21 @@ def calculate(beatmap_id: int, mods: int, mode: int, acc: float, ngeki: int, nka
                                 n50=n50,
                                 n_misses=nmiss)
         calculator.set_combo(combo)
-        beatmap_attr: Any = calculator.map_attributes(beatmap)
-        difficulty_attr: Any = calculator.difficulty(beatmap)
-        performance_attr: Any = calculator.performance(beatmap)
-        performance_point = performance_attr.pp if beatmap_attr.mode == mode_vn else 0.0
-        performance_point = performance_point if performance_point <= 8192 else 8192.0
-        return json_dump(difficulty_attr), json_dump(performance_attr), performance_point
+        return do_calculate(calculator, beatmap, mode_vn)
     except:
         return None, None, 0.0
+
+
+def calculate_prepend(beatmap_id: int, mods: int, acc: float, mode_vn=0):
+    beatmap = Beatmap(path=path.join(osu_folder_path, str(beatmap_id) + ".osu"))
+    calculator = Calculator(mode=mode_vn, mods=mods, acc=acc)
+    return do_calculate(calculator, beatmap, mode_vn)
+
+
+def do_calculate(calculator: Calculator, beatmap: Beatmap, mode_vn: int):
+    beatmap_attr: Any = calculator.map_attributes(beatmap)
+    difficulty_attr: Any = calculator.difficulty(beatmap)
+    performance_attr: Any = calculator.performance(beatmap)
+    performance_point = performance_attr.pp if beatmap_attr.mode == mode_vn else 0.0
+    performance_point = performance_point if performance_point <= 8192 else 8192.0
+    return json_dump(difficulty_attr), json_dump(performance_attr), performance_point

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 import models
-from cache import get_cached_data, refresh_cached_data
+from cache import get_cached_data, refresh_cached_data, get_prepend_data
 from models import db_session_bancho, Score
 from performance import calculate
 
@@ -14,32 +14,37 @@ async def create_table():
     await models.create_db_and_tables()
 
 
-@app.get("/calc/all")
-async def calc_all():
-    await gen_for_all()
+@app.patch("/scores/global")
+async def patch_global():
+    await update_global()
 
 
-@app.get("/calc/mode")
-async def calc_mode(mode: int):
-    await gen_for_mode(mode)
+@app.patch("/scores/mode")
+async def patch_mode(mode: int):
+    await update_mode(mode)
 
 
-@app.get("/calc/player")
-async def calc_player(player_id: int, mode: int):
-    await gen_for_player_mode(player_id, mode)
+@app.patch("/scores/player")
+async def patch_player(player_id: int, mode: int):
+    await update_player_mode(player_id, mode)
 
 
-@app.get("/data/all")
-async def fetch_all():
+@app.get("/scores/prepend")
+async def fetch_prepend():
+    return await get_cached_data("prepend")
+
+
+@app.get("/scores/global")
+async def fetch_global():
     return await get_cached_data("mode_12")
 
 
-@app.get("/data/mode")
+@app.get("/scores/mode")
 async def fetch_mode(mode: int):
     return await get_cached_data("mode_" + str(mode))
 
 
-@app.get("/data/player")
+@app.get("/scores/player")
 async def fetch_player(player_id: int, mode: int):
     return await get_cached_data(f"player_{player_id}_{mode}")
 
@@ -61,14 +66,21 @@ async def insert_data(sentence, source):
             await refresh_cached_data(source)
 
 
-async def gen_for_all():
+async def delete_data(source):
+    async with db_session_bancho() as session:
+        await session.execute(text("delete from score_analysis where source=:source").bindparams(source=source))
+
+
+async def update_global():
+    await delete_data("mode_12")
     sentence = text("select maps.id as beatmap_id, scores.* from scores left join users on "
                     "scores.userid=users.id left join maps on scores.map_md5=maps.md5 where "
                     "users.priv>2 and maps.status=2 order by scores.pp desc limit 100")
     await insert_data(sentence, "mode_12")
 
 
-async def gen_for_mode(mode: int):
+async def update_mode(mode: int):
+    await delete_data(f"mode_{mode}")
     sentence = text("select maps.id as beatmap_id, scores.* from scores left join users on "
                     "scores.userid=users.id left join maps on scores.map_md5=maps.md5 where "
                     "users.priv>2 and maps.status=2 and scores.mode=:mode"
@@ -76,7 +88,8 @@ async def gen_for_mode(mode: int):
     await insert_data(sentence, f"mode_{mode}")
 
 
-async def gen_for_player_mode(player_id: int, mode: int):
+async def update_player_mode(player_id: int, mode: int):
+    await delete_data(f"player_{player_id}_{mode}")
     sentence = text("select maps.id as beatmap_id, scores.* from scores left join users on "
                     "scores.userid=users.id left join maps on scores.map_md5=maps.md5 where "
                     "users.priv>2 and maps.status=2 and scores.mode=:mode and userid=:player_id"
