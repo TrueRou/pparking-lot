@@ -40,7 +40,8 @@ class Score(Base):
     new_pp = Column(Float(7), nullable=False)
     difficulty_attributes = Column(JSON, nullable=True)
     performance_attributes = Column(JSON, nullable=True)
-    analysis_data = Column(JSON, nullable=True)
+    analysis_data = Column(JSON, nullable=True)  # Strains
+    performance_vn = Column(JSON, nullable=True)  # Only for rx scores
     source = Column(String(64), nullable=False)
 
     def to_dict(self):
@@ -49,8 +50,13 @@ class Score(Base):
             "new_pp": self.new_pp,
             "difficulty_attributes": json.loads(self.difficulty_attributes or "{}"),
             "performance_attributes": json.loads(self.performance_attributes or "{}"),
-            "analysis_data": json.loads(self.analysis_data or "{}")
+            "performance_vn": json.loads(self.performance_vn or "{}"),
+
+            # No longer provide analysis data because too large.
         }
+
+    def get_analysis_data(self):
+        return json.loads(self.analysis_data or "{}")
 
 
 class Map(LazyBase):

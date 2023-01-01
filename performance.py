@@ -4,7 +4,7 @@ import json
 from os import path
 from typing import Any
 
-from akatsuki_pp_py import Calculator, Beatmap
+from rosu_pp_py import Calculator, Beatmap
 
 from gamemode import GameMode
 from mods import Mods
@@ -48,21 +48,28 @@ def calculate(beatmap_id: int, mods: int, mode: int, acc: float, ngeki: int, nka
                                 n50=n50,
                                 n_misses=nmiss)
         calculator.set_combo(combo)
-        return do_calculate(calculator, beatmap, mode_vn)
+        return do_calculate(calculator, beatmap, mode_vn, mods)
     except:
-        return None, None, 0.0
+        return None, None, 0.0, None, None
 
 
 def calculate_prepend(beatmap_id: int, mods: int, acc: float, mode_vn=0):
     beatmap = Beatmap(path=path.join(osu_folder_path, str(beatmap_id) + ".osu"))
     calculator = Calculator(mode=mode_vn, mods=mods, acc=acc)
-    return do_calculate(calculator, beatmap, mode_vn)
+    return do_calculate(calculator, beatmap, mode_vn, mods)
 
 
-def do_calculate(calculator: Calculator, beatmap: Beatmap, mode_vn: int):
+def do_calculate(calculator: Calculator, beatmap: Beatmap, mode_vn: int, mods):
     beatmap_attr: Any = calculator.map_attributes(beatmap)
     difficulty_attr: Any = calculator.difficulty(beatmap)
     performance_attr: Any = calculator.performance(beatmap)
+    strains: Any = calculator.strains(beatmap)
     performance_point = performance_attr.pp if beatmap_attr.mode == mode_vn else 0.0
     performance_point = performance_point if performance_point <= 8192 else 8192.0
-    return json_dump(difficulty_attr), json_dump(performance_attr), performance_point
+    # We want to calc addition vanilla performance attr for rx scores in order to compare
+    performance_vn = {}
+    if mods & Mods.RELAX:
+        mods &= ~Mods.RELAX
+        calculator.set_mods(mods)
+        performance_vn = calculator.performance(beatmap)
+    return json_dump(difficulty_attr), json_dump(performance_attr), performance_point, json_dump(strains), json_dump(performance_vn)

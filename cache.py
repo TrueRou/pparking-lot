@@ -11,7 +11,10 @@ from mods import Mods
 from performance import calculate_prepend
 
 cache_dict: dict = {}
-prepend_maps = [(2486881, 100.0, "HDDTRX")]
+prepend_maps = [
+    (2486881, 100.0, "HDDT"),
+    (1045757, 100.0, "HDDT"),
+]
 
 
 def save_cache():
@@ -45,7 +48,7 @@ async def fetch_data(source: str):
         for record in records:
             score_obj: models.ScoreFull = await session.get(models.ScoreFull, record.score_id)
             score_dict = score_obj.to_dict()
-            score_dict["mods_str"] = str(Mods(score_obj.mods))
+            score_dict["mods_str"] = repr(Mods(score_obj.mods))
             result.append({
                 "performance": record.to_dict(),
                 "beatmap": (await session.get(models.Map, ["osu!", record.map_id])).to_dict(),
@@ -66,7 +69,8 @@ async def get_prepend_data():
                 "performance": {
                     "difficulty_attributes": json.loads(calc_result[0] or "{}"),
                     "performance_attributes": json.loads(calc_result[1] or "{}"),
-                    "analysis_data": {},
+                    "analysis_data": json.loads(calc_result[3]),
+                    "performance_vn": json.loads(calc_result[4]),
                     "new_pp": calc_result[2],
                 },
                 "score": {
@@ -75,3 +79,10 @@ async def get_prepend_data():
                 }
             })
         return result
+
+
+async def fetch_analysis_data(database_score_id: int):
+    async with db_session_bancho() as session:
+        score_obj: models.Score = await session.get(models.Score, database_score_id)
+        if score_obj is not None:
+            return score_obj.get_analysis_data()
