@@ -11,6 +11,8 @@ export default {
       last_select: 4,
       disable_menu: false,
       rx_form: true,
+      strainsData: [],
+      dialogStrains: false
     }
   },
 
@@ -65,6 +67,25 @@ export default {
 
     sortPerformanceSpeedVN(obj1, obj2) {
       if (this.getPerformanceSafeVN(obj1.performance, "pp_speed") > this.getPerformanceSafeVN(obj2.performance, "pp_speed")) return -1
+    },
+
+    async showStrains(score_id) {
+      this.dialogStrains = true
+      const response = await axios.get(requests.scores_analysis + "?database_score_id=" + score_id)
+      const list = []
+      for (let i = 0; i < response.data.aim.length; i++) {
+        list.push({
+          "object": i + 1,
+          "aim": response.data.aim[i].toFixed(2),
+          "aim_rx": response.data.aim_rx[i].toFixed(2),
+          "aim_delta": Math.abs(response.data.aim_rx[i] - response.data.aim[i]).toFixed(2),
+          "speed": response.data.speed[i].toFixed(2),
+          "speed_rx": response.data.speed_rx[i].toFixed(2),
+          "speed_delta": Math.abs(response.data.speed_rx[i] - response.data.speed[i]).toFixed(2)
+        })
+      }
+      console.log(list)
+      this.strainsData = list // avoid too many view updates
     },
 
     async handleSelect(key, keyPath) {
@@ -207,10 +228,25 @@ export default {
           </el-table-column>
           <el-table-column align="center" label="Action" header-align="center">
             <template #default="scope">
-              <el-button>Analyze Strains</el-button>
+              <el-button @click="showStrains(scope.row.performance.id)">Analyze Strains</el-button>
             </template>
           </el-table-column>
         </el-table>
+        <el-dialog width="850" v-model="dialogStrains" title="Strains" style="margin-top: 50px">
+          <el-table height="720" :data="strainsData">
+            <el-table-column sortable property="object" label="No." width="80" />
+            <el-table-column header-align="center" label="Aim">
+              <el-table-column sortable property="aim" label="Vanilla" width="120" />
+              <el-table-column sortable property="aim_rx" label="Relax" width="120" />
+              <el-table-column sortable property="aim_delta" label="Delta" width="120" />
+            </el-table-column>
+            <el-table-column header-align="center" label="Speed">
+              <el-table-column sortable property="speed" label="Vanilla" width="120" />
+              <el-table-column sortable property="speed_rx" label="Relax" width="120" />
+              <el-table-column sortable property="speed_delta" label="Delta" />
+            </el-table-column>
+          </el-table>
+        </el-dialog>
       </el-main>
     </el-container>
   </div>
