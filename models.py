@@ -46,6 +46,7 @@ class Score(Base):
 
     def to_dict(self):
         return {
+            "id": self.id,
             "old_pp": self.old_pp,
             "new_pp": self.new_pp,
             "difficulty_attributes": json.loads(self.difficulty_attributes or "{}"),
