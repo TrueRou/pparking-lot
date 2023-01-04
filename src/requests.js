@@ -1,10 +1,10 @@
 export const config = {
-    backend_entrypoint: "http://127.0.0.1:8000/",
+    backend_entrypoint: "https://osu.ppy.sb/performance/api/",
 };
 
-export var requests = {
-    scores_global: config.backend_entrypoint + "scores/global",
-    scores_mode: config.backend_entrypoint + "scores/mode",
-    scores_player: config.backend_entrypoint + "scores/player",
-    scores_analysis: config.backend_entrypoint + "scores/analysis"
+export const requests = {
+    scores_global: new URL("scores/global", config.backend_entrypoint).href,
+    scores_mode: new URL("scores/mode", config.backend_entrypoint).href,
+    scores_player: new URL("scores/player", config.backend_entrypoint).href,
+    scores_analysis: new URL("scores/analysis", config.backend_entrypoint).href
 };
