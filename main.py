@@ -29,23 +29,17 @@ async def startup_event():
     await models.create_db_and_tables()
 
 
-@app.patch("/scores/mode")
-async def patch_mode(mode: int):
-    await update_mode(mode)
-
-
-@app.patch("/scores/player")
-async def patch_player(player_id: int, mode: int):
-    await update_player_mode(player_id, mode)
-
-
 @app.get("/scores/mode")
 async def fetch_mode(mode: int):
+    if not await has_data("mode_" + str(mode)):
+        await update_mode(mode)
     return await get_cached_data("mode_" + str(mode))
 
 
 @app.get("/scores/player")
 async def fetch_player(player_id: int, mode: int):
+    if not await has_data(f"player_{player_id}_{mode}"):
+        await update_player_mode(player_id, mode)
     return await get_cached_data(f"player_{player_id}_{mode}")
 
 
