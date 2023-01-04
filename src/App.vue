@@ -308,7 +308,7 @@ export default {
                 </div>
               </div>
             </template>
-            <el-button @click="refresh">Refresh</el-button>
+<!--            <el-button @click="refresh">Refresh</el-button>-->
           </div>
         </el-aside>
         <el-main style="--el-main-padding: 0">
