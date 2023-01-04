@@ -30,6 +30,13 @@ export default {
       return 0.0
     },
 
+    getValueSafe(obj) {
+      if (obj != null) {
+        return obj.toFixed(2)
+      }
+      return 0.0
+    },
+
     formatPerformanceVN(obj, child) {
       return this.getPerformanceSafeVN(obj, child).toFixed(2)
     },
@@ -71,6 +78,7 @@ export default {
 
     async showStrains(score_id) {
       this.dialogStrains = true
+      this.strainsData = []
       const response = await axios.get(requests.scores_analysis + "?database_score_id=" + score_id)
       const list = []
       for (let i = 0; i < response.data.aim.length; i++) {
@@ -92,7 +100,7 @@ export default {
       if (+key === 10) {
         this.user_id = +window.prompt("请输入玩家ID","");
         const response = await axios.get(requests.scores_player + "?mode=" + this.last_select + "&player_id=" + this.user_id)
-        this.rx_form = +this.last_select === 4
+        this.rx_form = (+this.last_select === 4 || +this.last_select === 5 || +this.last_select === 6)
         this.table_data = response.data
         return
       }
@@ -107,7 +115,7 @@ export default {
         return
       }
       const response = await axios.get(requests.scores_mode + "?mode=" + key)
-      this.rx_form = +key === 4
+      this.rx_form = (+key === 4 || +key === 5 || +key === 6)
       this.table_data = response.data
       this.last_select = key
     }
@@ -203,14 +211,14 @@ export default {
                 <span style="font-size: 14px;">{{ formatPerformance(scope.row.performance, "pp_acc") }}</span>
               </template>
             </el-table-column>
-            <el-table-column sortable label="PPSpd" width="120" :sort-method="sortPerformanceSpeed">
+            <el-table-column sortable label="PPSpd" v-if="!rx_form" width="120" :sort-method="sortPerformanceSpeed">
               <template #default="scope">
                 <span style="font-size: 14px;">{{ formatPerformance(scope.row.performance, "pp_speed") }}</span>
               </template>
             </el-table-column>
             <el-table-column sortable label="EMC" width="120" sort-by="performance.performance_attributes.effective_miss_count">
               <template #default="scope">
-                <span style="font-size: 14px;">{{ scope.row.performance.performance_attributes.effective_miss_count.toFixed(2) }}</span>
+                <span style="font-size: 14px;">{{ getValueSafe(scope.row.performance.performance_attributes.effective_miss_count) }}</span>
               </template>
             </el-table-column>
           </el-table-column>
@@ -232,8 +240,8 @@ export default {
             </template>
           </el-table-column>
         </el-table>
-        <el-dialog width="850" v-model="dialogStrains" title="Strains" style="margin-top: 50px">
-          <el-table height="720" :data="strainsData">
+        <el-dialog v-if="rx_form" width="850" v-model="dialogStrains" title="Strains" style="margin-top: 50px">
+          <el-table max-height="720" :data="strainsData">
             <el-table-column sortable property="object" label="No." width="80" />
             <el-table-column header-align="center" label="Aim">
               <el-table-column sortable property="aim" label="Vanilla" width="120" />
@@ -245,6 +253,13 @@ export default {
               <el-table-column sortable property="speed_rx" label="Relax" width="120" />
               <el-table-column sortable property="speed_delta" label="Delta" />
             </el-table-column>
+          </el-table>
+        </el-dialog>
+        <el-dialog v-if="!rx_form" width="360" v-model="dialogStrains" title="Strains" style="margin-top: 50px">
+          <el-table max-height="720" :data="strainsData">
+            <el-table-column sortable property="object" label="No." width="80" />
+            <el-table-column sortable property="aim" label="Aim" width="120" />
+            <el-table-column sortable property="speed" label="Speed" />
           </el-table>
         </el-dialog>
       </el-main>
