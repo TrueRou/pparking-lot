@@ -173,12 +173,14 @@ export default {
     },
 
     async userResults() {
-      this.tableData = await axios.get(requests.scores_player, {
-        params: {
-          mode: this.banchoPyMode,
-          player_id: this.userId,
-        },
-      }).then(res => res.data);
+      this.tableData = await axios
+        .get(requests.scores_player, {
+          params: {
+            mode: this.banchoPyMode,
+            player_id: this.userId,
+          },
+        })
+        .then((res) => res.data);
     },
 
     async handleSelect(key, keyPath) {
@@ -306,6 +308,7 @@ export default {
                 </div>
               </div>
             </template>
+            <el-button @click="refresh">Refresh</el-button>
           </div>
         </el-aside>
         <el-main style="--el-main-padding: 0">
