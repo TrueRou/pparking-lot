@@ -1,31 +1,10 @@
-import io
-import json
-import os
-import pickle
-
 from sqlalchemy import select
 
 import models
 from models import db_session_bancho, Score
 from mods import Mods
-from performance import calculate_prepend
 
 cache_dict: dict = {}
-prepend_maps = [
-    (2486881, 100.0, "HDDT"),
-    (1045757, 100.0, "HDDT"),
-]
-
-
-def save_cache():
-    with open("cache.pkl", "wb") as tf:
-        pickle.dump(cache_dict, tf)
-
-
-def read_cache():
-    if os.path.exists("cache.pkl"):
-        with open("cache.pkl", "rb") as tf:
-            cache_dict.update(pickle.load(tf))
 
 
 async def get_cached_data(source: str):
@@ -39,8 +18,6 @@ async def refresh_cached_data(source: str):
 
 
 async def fetch_data(source: str):
-    if source == "prepend":
-        return await get_prepend_data()
     result = []
     async with db_session_bancho() as session:
         records = (await session.execute(
@@ -53,32 +30,8 @@ async def fetch_data(source: str):
                 "performance": record.to_dict(),
                 "beatmap": (await session.get(models.Map, ["osu!", record.map_id])).to_dict(),
                 "score": score_dict,
-                "user": (await session.get(models.User, score_obj.userid)).to_dict(),
             })
     return result
-
-
-async def get_prepend_data():
-    async with db_session_bancho() as session:
-        result = []
-        for item in prepend_maps:
-            mods = Mods.from_modstr(item[2])
-            calc_result = calculate_prepend(item[0], mods.value, item[1])
-            result.append({
-                "beatmap": (await session.get(models.Map, ["osu!", item[0]])).to_dict(),
-                "performance": {
-                    "difficulty_attributes": json.loads(calc_result[0] or "{}"),
-                    "performance_attributes": json.loads(calc_result[1] or "{}"),
-                    "analysis_data": json.loads(calc_result[3]),
-                    "performance_vn": json.loads(calc_result[4]),
-                    "new_pp": calc_result[2],
-                },
-                "score": {
-                    "acc": item[1],
-                    "mods_str": item[2]
-                }
-            })
-        return result
 
 
 async def fetch_analysis_data(database_score_id: int):

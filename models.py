@@ -11,10 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+from config import db_dsn
+
 Base = declarative_base()
 LazyBase = declarative_base()
 
-bancho_engine = create_async_engine('mysql+aiomysql://root@localhost:3306/banchopy')
+bancho_engine = create_async_engine(db_dsn)
 async_session_maker_bancho = sessionmaker(bancho_engine, class_=AsyncSession, expire_on_commit=False)
 
 
@@ -42,7 +44,7 @@ class Score(Base):
     performance_attributes = Column(JSON, nullable=True)
     analysis_data = Column(JSON, nullable=True)  # Strains
     performance_vn = Column(JSON, nullable=True)  # Only for rx scores
-    source = Column(String(64), nullable=False)
+    source = Column(String(64), nullable=False, index=True)
 
     def to_dict(self):
         return {
@@ -52,7 +54,6 @@ class Score(Base):
             "difficulty_attributes": json.loads(self.difficulty_attributes or "{}"),
             "performance_attributes": json.loads(self.performance_attributes or "{}"),
             "performance_vn": json.loads(self.performance_vn or "{}"),
-
             # No longer provide analysis data because too large.
         }
 
@@ -88,7 +89,12 @@ class Map(LazyBase):
     diff = Column(Float(6), nullable=False, server_default=text("'0.000'"))
 
     def to_dict(self):
-        return {c.name: getattr(self, c.name, None) for c in self.__table__.columns}
+        return {
+            "id": self.id,
+            "title": self.title,
+            "version": self.version,
+            "set_id": self.set_id
+        }
 
 
 class ScoreFull(LazyBase):
@@ -118,34 +124,7 @@ class ScoreFull(LazyBase):
     online_checksum = Column(CHAR(32), nullable=False)
 
     def to_dict(self):
-        return {c.name: getattr(self, c.name, None) for c in self.__table__.columns}
-
-
-class User(LazyBase):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(32), nullable=False, unique=True)
-    safe_name = Column(String(32), nullable=False, unique=True)
-    email = Column(String(254), nullable=False, unique=True)
-    priv = Column(Integer, nullable=False, server_default=text("'1'"))
-    pw_bcrypt = Column(CHAR(60), nullable=False)
-    country = Column(CHAR(2), nullable=False, server_default=text("'xx'"))
-    silence_end = Column(Integer, nullable=False, server_default=text("'0'"))
-    donor_end = Column(Integer, nullable=False, server_default=text("'0'"))
-    creation_time = Column(Integer, nullable=False, server_default=text("'0'"))
-    latest_activity = Column(Integer, nullable=False, server_default=text("'0'"))
-    preferred_mode = Column(Integer, nullable=False, server_default=text("'0'"))
-    play_style = Column(Integer, nullable=False, server_default=text("'0'"))
-    custom_badge_name = Column(String(16))
-    custom_badge_icon = Column(String(64))
-    userpage_content = Column(String(2048))
-    clan_id = Column(Integer, nullable=False, server_default=text("'0'"))
-    clan_priv = Column(TINYINT(1), nullable=False, server_default=text("'0'"))
-    api_key = Column(CHAR(36), unique=True)
-
-    def to_dict(self):
         return {
-            "userid": self.id,
-            "name": self.name,
+            "acc": self.acc,
+            "nmiss": self.nmiss,
         }

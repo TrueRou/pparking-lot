@@ -6,10 +6,9 @@ from typing import Any
 
 from rosu_pp_py import Calculator, Beatmap
 
+from config import osu_folder_path
 from gamemode import GameMode
 from mods import Mods
-
-osu_folder_path = "C:\\Users\\chenb\\Downloads\\2022_12_01_osu_files"
 
 
 def to_dic(obj):
