@@ -1,4 +1,4 @@
-import { Mode, Ruleset } from "./banchoPyMode"
+import type { Mode, Ruleset } from "./banchoPyMode"
 
 export function forbiddenMode(ruleset: Ruleset, mode: Mode) {
   if (ruleset === "relax" && mode === "mania") return true
