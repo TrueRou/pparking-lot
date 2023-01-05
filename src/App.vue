@@ -96,7 +96,7 @@ export default {
     sortPPChange<T extends Record<string, any>>(obj1: T, obj2: T) {
       const obj1_change = obj1.performance.new_pp - obj1.performance.old_pp;
       const obj2_change = obj2.performance.new_pp - obj2.performance.old_pp;
-      if (obj1_change > obj2_change) return -1;
+      if (obj1_change > obj2_change) return 1;
     },
 
     sortPerformanceAim<T extends Record<string, any>>(obj1: T, obj2: T) {
@@ -104,7 +104,7 @@ export default {
         this.getPerformanceSafe(obj1.performance, "pp_aim") >
         this.getPerformanceSafe(obj2.performance, "pp_aim")
       )
-        return -1;
+        return 1;
     },
 
     sortPerformanceAcc<T extends Record<string, any>>(obj1: T, obj2: T) {
@@ -112,7 +112,7 @@ export default {
         this.getPerformanceSafe(obj1.performance, "pp_acc") >
         this.getPerformanceSafe(obj2.performance, "pp_acc")
       )
-        return -1;
+        return 1;
     },
 
     sortPerformanceSpeed<T extends Record<string, any>>(obj1: T, obj2: T) {
@@ -120,7 +120,7 @@ export default {
         this.getPerformanceSafe(obj1.performance, "pp_speed") >
         this.getPerformanceSafe(obj2.performance, "pp_speed")
       )
-        return -1;
+        return 1;
     },
 
     sortPerformanceAimVN<T extends Record<string, any>>(obj1: T, obj2: T) {
@@ -128,7 +128,7 @@ export default {
         this.getPerformanceSafeVN(obj1.performance, "pp_aim") >
         this.getPerformanceSafeVN(obj2.performance, "pp_aim")
       )
-        return -1;
+        return 1;
     },
 
     sortPerformanceSpeedVN<T extends Record<string, any>>(obj1: T, obj2: T) {
@@ -136,7 +136,7 @@ export default {
         this.getPerformanceSafeVN(obj1.performance, "pp_speed") >
         this.getPerformanceSafeVN(obj2.performance, "pp_speed")
       )
-        return -1;
+        return 1;
     },
 
     async showStrains(score_id: string) {
