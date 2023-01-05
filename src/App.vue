@@ -16,8 +16,7 @@ export default {
       filter: "all",
       userId: "",
       tableData: [],
-      lastSelect: 4,
-      disableMenu: false,
+      pending: false,
       strainsData: [] as {
         object: number,
         aim: string,
@@ -175,11 +174,13 @@ export default {
     },
 
     async refresh() {
+      this.pending = true
       if (this.filter === "user" && this.userId) {
         await this.userResults();
       } else if (this.filter === "all") {
         await this.allResults();
       }
+      this.pending = false
     },
 
     async allResults() {
@@ -218,16 +219,15 @@ export default {
             class="el-menu-demo"
             mode="horizontal"
             :ellipsis="false"
-            ref="header-menu"
           >
-            <el-menu-item :disabled="disableMenu" index="standard">standard</el-menu-item>
+            <el-menu-item :disabled="pending" index="standard">standard</el-menu-item>
             <el-menu-item
-              :disabled="disableMenu || forbiddenRuleset(mode as Mode, 'relax')"
+              :disabled="pending || forbiddenRuleset(mode as Mode, 'relax')"
               index="relax"
               >relax</el-menu-item
             >
             <el-menu-item
-              :disabled="disableMenu || forbiddenRuleset(mode as Mode, 'autopilot')"
+              :disabled="pending || forbiddenRuleset(mode as Mode, 'autopilot')"
               index="autopilot"
               >autopilot</el-menu-item
             >
@@ -240,21 +240,20 @@ export default {
             @select="(v: Mode) => (mode = v)"
             mode="horizontal"
             :ellipsis="false"
-            ref="header-menu"
           >
-            <el-menu-item :disabled="disableMenu" index="osu">osu</el-menu-item>
+            <el-menu-item :disabled="pending" index="osu">osu</el-menu-item>
             <el-menu-item
-              :disabled="disableMenu || forbiddenMode(ruleset as Ruleset, 'taiko')"
+              :disabled="pending || forbiddenMode(ruleset as Ruleset, 'taiko')"
               index="taiko"
               >taiko</el-menu-item
             >
             <el-menu-item
-              :disabled="disableMenu || forbiddenMode(ruleset as Ruleset, 'fruits')"
+              :disabled="pending || forbiddenMode(ruleset as Ruleset, 'fruits')"
               index="ctb"
               >ctb</el-menu-item
             >
             <el-menu-item
-              :disabled="disableMenu || forbiddenMode(ruleset as Ruleset, 'mania')"
+              :disabled="pending || forbiddenMode(ruleset as Ruleset, 'mania')"
               index="mania"
               >mania</el-menu-item
             >
@@ -266,13 +265,15 @@ export default {
           <div style="display: flex; flex-direction: column; height: 100%">
             <el-menu
               :default-active="filter"
-              @select="(v: 'all' | 'user') => (filter = v)"
+              @select="(v: 'all' | 'user') => {
+                filter = v
+                tableData = []
+              }"
               class="el-menu-demo"
-              :ellipsis="false"
-              ref="header-menu"
+              style="border: 0"
             >
-              <el-menu-item :disabled="disableMenu" index="all">Show all</el-menu-item>
-              <el-menu-item :disabled="disableMenu" index="user">
+              <el-menu-item :disabled="pending" index="all">Show all</el-menu-item>
+              <el-menu-item :disabled="pending" index="user">
                 <template v-if="filter === 'user'"> Type in user id below </template>
                 <template v-else> User </template>
               </el-menu-item>
