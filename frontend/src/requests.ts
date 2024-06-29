@@ -1,5 +1,5 @@
 export const config = {
-    backend_entrypoint: "https://osu.ppy.sb/performance/api/",
+    backend_entrypoint: "http://103.152.35.124:8727/",
 };
 
 export const requests = {
