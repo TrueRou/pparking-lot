@@ -58,7 +58,7 @@ class Score(Base):
         }
 
     def get_analysis_data(self):
-        return json.loads(self.analysis_data or "{}")
+        return json.loads(self.strains or "{}")
 
 
 class Map(LazyBase):
