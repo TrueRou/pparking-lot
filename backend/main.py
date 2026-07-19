@@ -6,13 +6,14 @@ from starlette.middleware.cors import CORSMiddleware
 import cache
 import models
 from cache import get_cached_data, refresh_cached_data
-from models import db_session_bancho, Score
+from models import Score, db_session_bancho
 from performance import calculate
 
 app = FastAPI()
 
 origins = [
     "http://localhost:5173",  # yarn dev
+    "http://103.152.35.124:4173",
 ]
 
 app.add_middleware(
@@ -69,6 +70,7 @@ async def insert_data(sentence, source):
                 score.n50,
                 score.nmiss,
                 score.max_combo,
+                score.score,
             )
             # Beatmap not exist or something else
             if calc_result[2] < 1.00:
@@ -90,7 +92,11 @@ async def insert_data(sentence, source):
 
 async def has_data(source):
     async with db_session_bancho() as session:
-        result = await session.execute(text("select id from performance_rework where source=:source limit 1").bindparams(source=source))
+        result = await session.execute(
+            text(
+                "select id from performance_rework where source=:source limit 1"
+            ).bindparams(source=source)
+        )
         return result.first() is not None
 
 
